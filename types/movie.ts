@@ -9,4 +9,5 @@ export interface Movie {
   release_date?: string | null;
   vote_average?: number | null;
   genres?: { id: number; name: string }[] | null;
+  runtime?: number;
 }
