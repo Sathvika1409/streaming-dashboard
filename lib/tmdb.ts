@@ -1,0 +1,42 @@
+import { Movie } from '@/types/movie';
+
+const BASE = 'https://api.themoviedb.org/3';
+const API_KEY = process.env.TMDB_API_KEY;
+
+if (!API_KEY) {
+  console.warn('⚠️ TMDB_API_KEY is not set. Add it to .env.local or Vercel env vars.');
+}
+
+async function fetchFromTmdb(path: string, params: Record<string, string | number | undefined> = {}) {
+  const url = new URL(`${BASE}${path}`);
+  url.searchParams.set('api_key', API_KEY ?? '');
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined) url.searchParams.set(k, String(v));
+  });
+  const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB fetch failed (${res.status}): ${text}`);
+  }
+  return res.json();
+}
+
+export async function fetchPopular(): Promise<Movie[]> {
+  const data = await fetchFromTmdb('/movie/popular', { language: 'en-US', page: 1 });
+  return (data.results ?? []) as Movie[];
+}
+
+export async function fetchTopRated(): Promise<Movie[]> {
+  const data = await fetchFromTmdb('/movie/top_rated', { language: 'en-US', page: 1 });
+  return (data.results ?? []) as Movie[];
+}
+
+export async function fetchNowPlaying(): Promise<Movie[]> {
+  const data = await fetchFromTmdb('/movie/now_playing', { language: 'en-US', page: 1 });
+  return (data.results ?? []) as Movie[];
+}
+
+export async function fetchMovieById(id: string): Promise<Movie> {
+  const data = await fetchFromTmdb(`/movie/${id}`, { language: 'en-US' });
+  return data as Movie;
+}
