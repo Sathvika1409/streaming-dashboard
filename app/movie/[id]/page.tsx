@@ -1,19 +1,21 @@
 import React from 'react';
 import { fetchMovieById } from '@/lib/tmdb';
+import { Movie } from '@/types/movie';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default async function MoviePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const movie: Movie | null = await fetchMovieById(id);
 
-  const movie = await fetchMovieById(id);
-
-  // Early return if movie is invalid or missing
+  // Early return if movie is invalid
   if (!movie || !movie.id || !movie.title) {
     return (
       <div className="text-white p-10">
         <h2 className="text-2xl">Movie Not Found</h2>
-        <Link href="/" className="text-amber-400">Back to Home</Link>
+        <Link href="/" className="text-amber-400">
+          Back to Home
+        </Link>
       </div>
     );
   }
@@ -29,7 +31,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
   return (
     <div className="text-white relative">
 
-      {/* TOP-LEFT FLOATING BACK BUTTON */}
+      {/* BACK BUTTON */}
       <div className="absolute top-6 left-6 z-50">
         <Link
           href="/"
@@ -80,15 +82,19 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
         <div className="md:col-span-2 space-y-6">
           <h1 className="text-4xl font-bold">{movie.title}</h1>
 
+          {/* TAGLINE */}
           {movie.tagline && (
             <p className="text-xl italic text-amber-400">"{movie.tagline}"</p>
           )}
 
-          <p className="text-gray-300 leading-relaxed">{movie.overview || 'No overview available.'}</p>
+          {/* OVERVIEW */}
+          <p className="text-gray-300 leading-relaxed">
+            {movie.overview || 'No overview available.'}
+          </p>
 
           <div className="space-y-3 text-gray-300">
 
-            {/* Release Date */}
+            {/* RELEASE DATE */}
             {movie.release_date && (
               <p>
                 <span className="font-semibold text-white">Release Date: </span>
@@ -100,7 +106,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
               </p>
             )}
 
-            {/* Runtime */}
+            {/* RUNTIME */}
             {movie.runtime && (
               <p>
                 <span className="font-semibold text-white">Runtime: </span>
@@ -108,7 +114,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
               </p>
             )}
 
-            {/* Genres – FIXED TYPE ERROR */}
+            {/* GENRES */}
             {(movie.genres?.length ?? 0) > 0 && (
               <div>
                 <span className="font-semibold text-white">Genres: </span>
@@ -125,14 +131,14 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            {/* Vote Average */}
-            {movie.vote_average > 0 && (
+            {/* RATING */}
+            {(movie.vote_average ?? 0) > 0 && (
               <p>
                 <span className="font-semibold text-white">Rating: </span>
                 <span className="text-amber-400">
-                  {movie.vote_average.toFixed(1)} / 10
+                  {(movie.vote_average ?? 0).toFixed(1)} / 10
                 </span>{' '}
-                ({movie.vote_count} votes)
+                ({movie.vote_count ?? 0} votes)
               </p>
             )}
           </div>
